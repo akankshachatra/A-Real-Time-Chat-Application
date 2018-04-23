@@ -1,0 +1,120 @@
+<html>
+    <head>
+        <title> A Real-time Chat application </title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+		<!--<link rel="stylesheet" href="/css/main.css" />-->
+        <style>
+            body{
+                background-color: #DCDCDC;             
+            }
+            #chat{
+                height: 500px;
+            }
+            #nickWrap{
+                margin-left:500px;
+                padding:10px;
+            }
+            #contentWrap{
+                display: none;
+            }
+            #chatWrap{
+                float: left;
+                margin-left:20px;
+                border: 3px black solid;
+            }
+            .error{
+                color: red;
+            }
+            .whisper{
+                color: gray;
+                font-style: italic;
+            }
+        </style>
+    </head>
+<body>
+    <div id='nickWrap'>
+            <p id = "nickError" style="font-size:20px;"><strong>Enter a username</strong></p>
+            <form id = 'setNick'>
+                <input size = "35" autocomplete ="off" id = "nickname" required></input>
+                <input class="btn btn-success" type="submit"></input>
+            </form>
+            
+<img style="margin-left:-150px;" src="http://nielinfo.com/wp-content/uploads/2017/02/the-best-chat-application-for-your-android.jpg" alt="no image">           
+    </div>
+   
+     <div id = "contentWrap">
+            <div id = "chatWrap">
+                <div id = "chat">  </div>
+                    <form id ="send-message">
+                        <input size="35" id="message" required></input>
+                        <input class="btn btn-success" type="submit"></input>
+                    </form>
+            </div>
+                    <div id ="users"></div>
+    </div>
+  
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        jQuery(function($){
+            var socket = io.connect();
+            var $nickForm = $('#setNick');
+            var $nickError = $('#nickError');
+            var $nickBox = $('#nickname');
+            var $users = $('#users')
+            var $messageForm = $('#send-message');
+            var $messageBox = $('#message');
+            var $chat = $('#chat');
+
+            $messageForm.submit(function(e){
+                e.preventDefault();
+                socket.emit('send message', $messageBox.val(), function(data){
+                    $chat.append("<span class='error'><b>"+data+"<br/></span>");
+                });
+                $messageBox.val('');
+            });
+
+            socket.on('usernames', function(data){
+                    var html = '';
+                    for(var i = 0; i < data.length; i++){
+                        html+=data[i]+ '<br/>';
+                    }
+                    $users.html(html);
+                });
+
+            $nickForm.submit(function(e){
+                    e.preventDefault();
+                    socket.emit('new user', $nickBox.val(), function(data){
+                        if(data){
+                            $('#nickWrap').hide();
+                            $('#contentWrap').show();
+                        }else{
+                            $nickError.html('Username already exists. Try again.');
+                        }
+                    });
+                    $nickBox.val('');
+                });
+
+            socket.on('new message', function(data){
+                $chat.append('<span class="msg"><b>' + data.nick + ' :  </b>' + data.msg + "</span><br/>");
+            });
+
+             socket.on('whisper', function(data){
+                $chat.append('<span class="whisper"><b>' + data.nick + ' :  </b>' + data.msg + "</span><br/>");
+            });
+
+            socket.on('load old msgs', function(docs){
+                    console.log("retrieving...");
+                    for(var i = docs.length-1  ; i >= 0; i--){
+                        displayMsg(docs[i]);
+                    }
+                }); 
+                
+                function displayMsg(data){
+                    $chat.append("<span class='msg'><b>" +data.nick + "</b>: " + data.msg + "<br/></span>");
+                }
+        });
+
+    </script>
+</body>
+</html>
