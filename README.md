@@ -1,7 +1,7 @@
 # A-Real-Time-Chat-Application
 
 1)	Install nodeJS, MongoDB and Visual Studio Code.
-2)	Unzip all the files from AmnesiaFinalProject.zip to a desired location. And then got to ChatApplication folder inside AmnesiaFinalProject
+2)	Unzip all the files to a desired location. And then got to ChatApplication 
 3)	Install the dependency by entering the following command
 npm install “dependency_name” –save
 4)	Open the mongodb connections 
